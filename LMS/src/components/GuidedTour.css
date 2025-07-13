@@ -1,0 +1,253 @@
+/* Guided Tour Styles */
+.tour-step-content {
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.tour-step-content h4 {
+  color: #800000;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tour-step-content p {
+  margin-bottom: 16px;
+  color: #333;
+  font-size: 14px;
+}
+
+.tour-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #f8f9fa;
+  border-left: 4px solid #800000;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.tour-tip svg {
+  color: #800000;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.tour-tip span {
+  font-size: 13px;
+  color: #555;
+  font-style: italic;
+}
+
+.tour-actions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.tour-actions p {
+  font-weight: 600;
+  color: #800000;
+  margin-bottom: 8px;
+}
+
+.tour-actions ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tour-actions li {
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #555;
+}
+
+/* Tour Controls */
+.tour-controls {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9999;
+}
+
+.tour-control-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tour-start-btn {
+  background: linear-gradient(135deg, #800000, #A52A2A);
+  color: #FFD700;
+}
+
+.tour-start-btn:hover {
+  background: linear-gradient(135deg, #A52A2A, #800000);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tour-skip-btn {
+  background: #fff;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.tour-skip-btn:hover {
+  background: #f8f9fa;
+  color: #333;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tour-controls {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .tour-control-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .tour-step-content {
+    max-width: 300px;
+  }
+  
+  .tour-step-content h4 {
+    font-size: 16px;
+  }
+  
+  .tour-step-content p {
+    font-size: 13px;
+  }
+}
+
+/* Joyride Override Styles */
+.react-joyride__overlay {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.react-joyride__tooltip {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+}
+
+.react-joyride__tooltip__header {
+  background: linear-gradient(135deg, #800000, #A52A2A) !important;
+  color: #FFD700 !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 16px 20px !important;
+}
+
+.react-joyride__tooltip__content {
+  padding: 20px !important;
+  background: #fff !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.react-joyride__tooltip__footer {
+  padding: 16px 20px !important;
+  background: #f8f9fa !important;
+  border-radius: 0 0 12px 12px !important;
+  border-top: 1px solid #eee !important;
+}
+
+.react-joyride__button {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-joyride__button--primary {
+  background: #800000 !important;
+  color: #FFD700 !important;
+  border: none !important;
+}
+
+.react-joyride__button--primary:hover {
+  background: #A52A2A !important;
+  transform: translateY(-1px) !important;
+}
+
+.react-joyride__button--secondary {
+  color: #800000 !important;
+  background: transparent !important;
+  border: 1px solid #800000 !important;
+}
+
+.react-joyride__button--secondary:hover {
+  background: #800000 !important;
+  color: #FFD700 !important;
+}
+
+.react-joyride__button--skip {
+  color: #666 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.react-joyride__button--skip:hover {
+  color: #333 !important;
+  background: #f8f9fa !important;
+}
+
+.react-joyride__spotlight {
+  border-radius: 8px !important;
+  box-shadow: 0 0 0 4px rgba(128, 0, 0, 0.3) !important;
+}
+
+.react-joyride__spotlight__overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Progress Bar */
+.react-joyride__progress {
+  background: #e9ecef !important;
+  border-radius: 10px !important;
+  height: 6px !important;
+  margin: 0 20px !important;
+}
+
+.react-joyride__progress__bar {
+  background: linear-gradient(90deg, #800000, #A52A2A) !important;
+  border-radius: 10px !important;
+  transition: width 0.3s ease !important;
+}
+
+/* Beacon Animation */
+.react-joyride__beacon {
+  background: #800000 !important;
+  border: 2px solid #FFD700 !important;
+  animation: beacon-pulse 2s infinite !important;
+}
+
+@keyframes beacon-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+} 
