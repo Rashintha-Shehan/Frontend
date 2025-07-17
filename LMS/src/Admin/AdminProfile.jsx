@@ -68,7 +68,9 @@ export default function Profile() {
   });
 
  useEffect(() => {
-  api.get('/admin/me')
+  const role = localStorage.getItem('role');
+  const url = role === 'ASSISTANT_REGISTRAR' ? '/ar/me' : '/admin/me';
+  api.get(url)
     .then(res => {
       setUser(res.data);
         setFormData({

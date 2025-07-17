@@ -32,7 +32,7 @@ const HelpCenter = ({ isVisible, onClose }) => {
     {
       id: 2,
       question: "What types of leave are available?",
-      answer: "The system supports Casual Leave, Sick Leave, Vacation Leave, Duty Leave, Half Day, and Short Leave. Each type has specific requirements and approval processes.",
+      answer: "The system supports Casual Leave, Sick Leave, Duty Leave, Half Day, and Short Leave. Each type has specific requirements and approval processes.",
       category: "leave-types"
     },
     {

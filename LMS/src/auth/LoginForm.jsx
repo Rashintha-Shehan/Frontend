@@ -30,6 +30,7 @@ export default function LoginForm() {
 
       if (data.user.role === 'SYS_ADMIN') navigate('/SysAdminDashboard');
       else if (data.user.role === 'ADMIN') navigate('/admin');
+      else if (data.user.role === 'ASSISTANT_REGISTRAR') navigate('/ar/dashboard');
       else navigate('/user');
     } catch (err) {
       toast.error(err.response?.data || 'Login failed. Please try again.');
@@ -78,6 +79,7 @@ export default function LoginForm() {
       // Navigate to appropriate dashboard based on role
       if (role === 'SYS_ADMIN') navigate('/SysAdminDashboard');
       else if (role === 'ADMIN') navigate('/admin');
+      else if (role === 'ASSISTANT_REGISTRAR') navigate('/ar/dashboard');
       else navigate('/user');
     } catch (error) {
       console.error('Google login error:', error);

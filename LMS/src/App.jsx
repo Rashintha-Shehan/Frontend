@@ -21,6 +21,7 @@ import AdminProfile from './Admin/AdminProfile';
 import PendingUsers from './Admin/PendingUsers';
 import Footer from './component/Footer';
 import AuditLogPanel from './SystemAdmin/AuditLogPanel';
+import ARDashboard from './Admin/ARDashboard';
 
 // Onboarding Components
 import { OnboardingProvider } from './context/OnboardingContext';
@@ -51,6 +52,7 @@ function App() {
           <Route path='/pending' element={<PendingUsers/>}/>
           <Route path='/Footer' element={<Footer/>}/>
           <Route path='/AuditLogPanel' element={<AuditLogPanel/>}/>
+          <Route path="/ar/dashboard" element={<ARDashboard />} />
         </Routes>
       </BrowserRouter>
       <ToastContainer position="top-right" autoClose={3000} />

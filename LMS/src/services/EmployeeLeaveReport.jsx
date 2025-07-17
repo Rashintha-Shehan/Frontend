@@ -47,13 +47,15 @@ const formatDays = (num) => {
 // --- Calculate leave summary ---
 const calculateSummary = (leaves) => {
   let totalDays = 0;
+  let shortLeaveCount = 0;
 
   leaves.forEach((l) => {
-    // All leave types (including short leaves) already have numberOfDays calculated correctly
-    // Short leaves: hours/8 (e.g., 2 hours = 0.25 days, 4 hours = 0.5 days)
-    // Half days: 0.5 days
-    // Regular leaves: inclusive days
-    totalDays += l.numberOfDays || 0;
+    const type = (l.leaveType || '').toUpperCase();
+    if (type.includes('SHORT')) {
+      shortLeaveCount += 1; // or accumulate days if needed
+    } else {
+      totalDays += l.numberOfDays || 0;
+    }
   });
 
   const noPay = totalDays > 2 ? totalDays - 2 : 0;
@@ -61,6 +63,7 @@ const calculateSummary = (leaves) => {
   return {
     totalDays,
     noPay,
+    shortLeaveCount
   };
 };
 
@@ -340,7 +343,9 @@ const EmployeeLeaveReport = () => {
     const fetchEmployeeIds = async () => {
       try {
         const ids = await getAllEmployeeIds();
-        setEmployeeIds(ids);
+        // Only Academic staff (exclude Non-Academic and Academic Support)
+        const academic = ids.filter(e => (e.typeOfRegistration || e.staffCategory) !== 'Non-Academic' && (e.typeOfRegistration || e.staffCategory) !== 'Academic Support');
+        setEmployeeIds(academic);
       } catch {
         setError('Failed to load employee list.');
       }

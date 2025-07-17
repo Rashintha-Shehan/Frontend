@@ -130,7 +130,7 @@ const Onboarding = ({ isVisible, onComplete, userRole = 'STAFF' }) => {
                   <div className="step-number">2</div>
                   <div className="step-content">
                     <h5>Select Leave Type</h5>
-                    <p>Choose from: Casual Leave, Sick Leave, Vacation Leave, Duty Leave, Half Day, or Short Leave.</p>
+                    <p>Choose from: Casual Leave, Sick Leave, Duty Leave, Half Day, or Short Leave.</p>
                   </div>
                 </div>
                 <div className="step">
@@ -191,18 +191,6 @@ const Onboarding = ({ isVisible, onComplete, userRole = 'STAFF' }) => {
                     <li>Requires medical certificate</li>
                     <li>No maximum limit</li>
                     <li>Can be extended with approval</li>
-                  </ul>
-                </div>
-                <div className="leave-type-card">
-                  <div className="leave-type-header">
-                    <FaHandshake />
-                    <h5>Vacation Leave</h5>
-                  </div>
-                  <p>For annual holidays and personal time</p>
-                  <ul>
-                    <li>Based on years of service</li>
-                    <li>Requires advance notice</li>
-                    <li>Subject to department approval</li>
                   </ul>
                 </div>
                 <div className="leave-type-card">

@@ -67,11 +67,13 @@ const MonthlyLeaveReport = () => {
         ? await getLeaveReportByDateRange(startDate, endDate)
         : await getMonthlyLeaveReport(parseInt(month), parseInt(year));
 
-      setReportData(data);
+      // Only Academic staff (exclude Non-Academic and Academic Support)
+      const filtered = (data || []).filter(lr => lr.user && (lr.user.typeOfRegistration || lr.user.staffCategory) !== 'Non-Academic' && (lr.user.typeOfRegistration || lr.user.staffCategory) !== 'Academic Support');
+      setReportData(filtered);
 
-      if (data.length > 0 && data[0].user) {
-        setFaculty(data[0].user.faculty || '');
-        setDepartment(data[0].user.department || '');
+      if (filtered.length > 0 && filtered[0].user) {
+        setFaculty(filtered[0].user.faculty || '');
+        setDepartment(filtered[0].user.department || '');
       } else {
         setFaculty('');
         setDepartment('');
@@ -112,7 +114,6 @@ const MonthlyLeaveReport = () => {
           halfDay: 0,
           shortLeave: 0,
           duty: 0,
-          vacation: 0,
           totalLeaveDays: 0,
           totalShortLeaveHours: 0,
           halfDayCount: 0, // Track count of half-day leaves
@@ -124,27 +125,20 @@ const MonthlyLeaveReport = () => {
       const leaveType = (leave.leaveType || '').trim();
       
       if (leaveType.toLowerCase().includes('short') || leaveType === 'Short Leave') {
-        // Use the numberOfDays from database (already calculated as hours/8)
-        // For example: 2-hour short leave = 0.25 days, 4-hour short leave = 0.5 days
-        // 4 short leaves of 2 hours each = 4 × 0.25 = 1.0 full day
         const shortLeaveDays = leave.numberOfDays || 0;
         map[empId].shortLeave += shortLeaveDays;
-        map[empId].shortLeaveCount += 1; // Count the number of short leaves
+        map[empId].shortLeaveCount += 1;
         map[empId].totalShortLeaveHours += getShortLeaveHours(leave.shortLeaveStartTime, leave.shortLeaveEndTime);
-        // Add short leave days to total (they are already calculated as fractional days)
-        map[empId].totalLeaveDays += shortLeaveDays;
-        console.log(`Added short leave: ${shortLeaveDays} days, total now: ${map[empId].shortLeave}`);
+        // Do NOT add short leave days to totalLeaveDays
       } else if (leaveType.toLowerCase().includes('half') || leaveType === 'Half Day') {
         const days = leave.numberOfDays || 0;
-        map[empId].halfDay += days; // This will be 0.5 for each half-day
-        map[empId].halfDayCount += 1; // Count the number of half-day leaves
-        map[empId].totalLeaveDays += days; // Add to total (0.5 each)
-        console.log(`Added half day: ${days} days, total now: ${map[empId].halfDay}, count: ${map[empId].halfDayCount}`);
+        map[empId].halfDay += days;
+        map[empId].halfDayCount += 1;
+        map[empId].totalLeaveDays += days;
       } else if (leaveType.toLowerCase().includes('casual') || leaveType === 'Casual') {
         const days = leave.numberOfDays || 0;
         map[empId].casual += days;
         map[empId].totalLeaveDays += days;
-        console.log(`Added casual: ${days} days, total now: ${map[empId].casual}`);
       } else if (leaveType.toLowerCase().includes('sick') || leaveType === 'Sick') {
         const days = leave.numberOfDays || 0;
         map[empId].sick += days;
@@ -152,10 +146,6 @@ const MonthlyLeaveReport = () => {
       } else if (leaveType.toLowerCase().includes('duty') || leaveType === 'Duty') {
         const days = leave.numberOfDays || 0;
         map[empId].duty += days;
-        map[empId].totalLeaveDays += days;
-      } else if (leaveType.toLowerCase().includes('vacation') || leaveType === 'Vacation') {
-        const days = leave.numberOfDays || 0;
-        map[empId].vacation += days;
         map[empId].totalLeaveDays += days;
       }
     });
@@ -175,7 +165,6 @@ const MonthlyLeaveReport = () => {
         halfDay: format(emp.halfDay), // Show total days for half-day leaves
         shortLeave: format(emp.shortLeave), // Show total days for short leaves
         duty: format(emp.duty),
-        vacation: format(emp.vacation),
         totalLeaveDays: totalDays.toFixed(2),
         noPayDays: noPayDays > 0 ? noPayDays.toFixed(2) : '-',
       };

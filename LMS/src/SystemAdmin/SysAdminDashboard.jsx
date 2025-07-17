@@ -163,7 +163,7 @@ const RoleBadge = ({ role }) => {
   );
 };
 
-// Mock audit logs data
+
 
 export default function SysAdminDashboard() {
   const navigate = useNavigate();
@@ -220,16 +220,16 @@ export default function SysAdminDashboard() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Memoized admin map
+  // Remove the single-admin-per-department restriction
   const adminsByFacultyDepartment = useMemo(() => {
-    return users.reduce((acc, u) => {
-      if (u.role === "ADMIN" && u.faculty && u.department) {
-        const key = `${u.faculty}||${u.department}`;
-        acc[key] = u;
-      }
-      return acc;
-    }, {});
+    return users.filter(u => u.role === "ADMIN" && u.faculty && u.department);
   }, [users]);
+
+  // Helper: Get all admins for the selected faculty/department
+  const adminsForSelection = useMemo(() => {
+    if (filterFaculty === "ALL" || filterDepartment === "ALL") return [];
+    return users.filter(u => u.role === "ADMIN" && u.faculty === filterFaculty && u.department === filterDepartment);
+  }, [users, filterFaculty, filterDepartment]);
 
   const DEPARTMENTS = useMemo(() => {
     if (filterFaculty === "ALL") {
@@ -277,14 +277,7 @@ export default function SysAdminDashboard() {
       return toast.error("Please select a department from the filter above to assign admin.");
     }
 
-    const existingAdmin = adminsByFacultyDepartment[`${faculty}||${department}`];
-    if (existingAdmin && existingAdmin.id !== userId) {
-      const confirmReplace = window.confirm(
-        `Department "${department}" in "${faculty}" already has an admin (${existingAdmin.firstName} ${existingAdmin.lastName}). Replace?`
-      );
-      if (!confirmReplace) return;
-    }
-
+    // No check for existing admin(s) in this department
     try {
       await api.put(`/users/${userId}/assign-admin`, { faculty, department });
       toast.success("Admin role assigned successfully.");
@@ -313,6 +306,20 @@ export default function SysAdminDashboard() {
       fetchUsers();
     } catch {
       toast.error("Failed to delete user.");
+    }
+  };
+
+  // Assign AR role
+  const assignARRole = async (userId, faculty) => {
+    if (!faculty || faculty === "ALL") {
+      return toast.error("Please select a faculty from the filter above to assign AR.");
+    }
+    try {
+      await api.put(`/users/${userId}/assign-ar`, { faculty });
+      toast.success("AR role assigned successfully.");
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data || "Failed to assign AR role.");
     }
   };
 
@@ -448,29 +455,11 @@ export default function SysAdminDashboard() {
                 </p>
               </div>
               <div className="d-flex flex-wrap gap-2 mt-3 align-items-center" style={{ justifyContent: isMobile ? 'center' : 'flex-start' }}>
-                {user.role === "STAFF" && (
+                {user.role === "STAFF" && user.jobTitle === "AR" && (
                   <>
                     {(filterFaculty === "ALL" || filterDepartment === "ALL") && (
                       <div className="text-muted small" style={{ fontSize: isMobile ? '0.75rem' : '0.875rem', textAlign: 'center' }}>
                         Please select both Faculty and Department filters above to assign admin.
-                      </div>
-                    )}
-                    {filterFaculty !== "ALL" && filterDepartment !== "ALL" && existingAdmin && existingAdmin.id !== user.id && (
-                      <div
-                        className="small mt-1"
-                        style={{
-                          maxWidth: isMobile ? '100%' : 300,
-                          color: "#800000", // Maroon text
-                          backgroundColor: darkMode ? "#4b0000" : "#f8d7da", // Dark maroon bg for dark mode, light pinkish for light mode
-                          padding: "4px 8px",
-                          borderRadius: 6,
-                          fontWeight: "600",
-                          boxShadow: darkMode ? "0 0 6px #800000" : "none",
-                          fontSize: isMobile ? '0.75rem' : '0.875rem',
-                          textAlign: 'center'
-                        }}
-                      >
-                        Warning: Department of "{filterDepartment}" already has admin <strong>{existingAdmin.firstName} {existingAdmin.lastName}</strong>. Assigning will replace them.
                       </div>
                     )}
                     <button
@@ -479,7 +468,15 @@ export default function SysAdminDashboard() {
                       disabled={filterFaculty === "ALL" || filterDepartment === "ALL"}
                       style={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
                     >
-                      <FaUserShield className="me-1" /> Assign
+                      <FaUserShield className="me-1" /> Assign Admin
+                    </button>
+                    <button
+                      className="btn btn-sm btn-info"
+                      onClick={() => assignARRole(user.id, filterFaculty)}
+                      disabled={filterFaculty === "ALL"}
+                      style={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}
+                    >
+                      <FaUserShield className="me-1" /> Assign AR
                     </button>
                   </>
                 )}
@@ -623,6 +620,31 @@ export default function SysAdminDashboard() {
             <img src={CEITLogo} alt="CEIT Logo" style={{ height: isMobile ? 40 : 60 }} />
           </div>
         </header>
+
+        {/* --- Admins for selected department --- */}
+        {filterFaculty !== "ALL" && filterDepartment !== "ALL" && (
+          <div className="mb-3 p-3 bg-white rounded shadow-sm border" style={{ borderLeft: `4px solid ${PRIMARY_COLOR}` }}>
+            <h5 style={{ color: PRIMARY_COLOR, fontWeight: 700, marginBottom: 8 }}>
+              Admins for {filterDepartment} ({filterFaculty})
+            </h5>
+            {adminsForSelection.length > 0 ? (
+              <ul className="mb-0" style={{ listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+                {adminsForSelection.map(admin => (
+                  <li key={admin.id} style={{ background: '#f8f9fa', borderRadius: 8, padding: '8px 16px', border: `1px solid ${PRIMARY_COLOR}` }}>
+                    <span style={{ fontWeight: 600 }}>{admin.firstName} {admin.lastName}</span>
+                    <span className="ms-2 badge bg-primary">Admin</span>
+                    <span className="ms-2 text-muted" style={{ fontSize: 13 }}>{admin.email}</span>
+                    <button className="btn btn-sm btn-outline-warning ms-2" onClick={() => removeAdminRole(admin.id)}>
+                      <FaUndo className="me-1" /> Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-muted">No admins assigned for this department yet.</span>
+            )}
+          </div>
+        )}
 
         {/* Filters + Export + Print */}
         <section
@@ -788,7 +810,9 @@ export default function SysAdminDashboard() {
         </div>
 
         {/* Audit Logs Panel */}
-        {showAuditLog && <AuditLogPanel darkMode={darkMode} />}
+        {showAuditLog && <AuditLogPanel darkMode={darkMode} />
+        }
+        
 
         {/* Users List */}
         <section ref={printRef}>

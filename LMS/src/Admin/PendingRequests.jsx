@@ -8,7 +8,6 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
   const [rejectLeaveId, setRejectLeaveId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // New state for view modal & selected leave
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewLeave, setViewLeave] = useState(null);
 
@@ -72,6 +71,7 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
 
   return (
     <>
+      {/* Pending Leave Table */}
       <div className="table-responsive rounded shadow-sm" style={{ overflowX: 'auto' }}>
         <table className="table table-hover align-middle mb-0">
           <thead
@@ -127,22 +127,10 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
                     <button
                       title="View Details"
                       className="btn btn-sm btn-outline-primary"
-                      style={{
-                        borderColor: '#800000',
-                        color: '#800000',
-                        fontWeight: 600,
-                        padding: '4px 8px',
-                      }}
+                      style={{ borderColor: '#800000', color: '#800000', fontWeight: 600, padding: '4px 8px' }}
                       onClick={() => openViewModal(leave)}
                     >
-                      {/* Eye icon SVG */}
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        fill="currentColor"
-                        viewBox="0 0 16 16"
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z" />
                         <path d="M8 5a3 3 0 1 1 0 6 3 3 0 0 1 0-6z" fill="white" />
                       </svg>
@@ -151,13 +139,7 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
                     {/* Approve button */}
                     <button
                       className="btn btn-sm px-3"
-                      style={{
-                        backgroundColor: '#FFD700',
-                        color: '#800000',
-                        fontWeight: 600,
-                        border: 'none',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      }}
+                      style={{ backgroundColor: '#FFD700', color: '#800000', fontWeight: 600, border: 'none' }}
                       onClick={() => handleApprove(leave.id)}
                     >
                       Approve
@@ -166,11 +148,7 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
                     {/* Reject button */}
                     <button
                       className="btn btn-sm btn-outline-danger px-3"
-                      style={{
-                        borderColor: '#800000',
-                        color: '#800000',
-                        fontWeight: 600,
-                      }}
+                      style={{ borderColor: '#800000', color: '#800000', fontWeight: 600 }}
                       onClick={() => openRejectModal(leave.id)}
                     >
                       Reject
@@ -185,71 +163,19 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
 
       {/* Reject Modal */}
       {showRejectModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999,
-          }}
-          onClick={closeRejectModal}
-        >
-          <div
-            style={{
-              background: 'white',
-              padding: 20,
-              borderRadius: 8,
-              maxWidth: 400,
-              width: '90%',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal-backdrop" style={backdropStyle} onClick={closeRejectModal}>
+          <div style={rejectModalStyle} onClick={(e) => e.stopPropagation()}>
             <h5 style={{ marginBottom: '1rem', color: '#800000' }}>Enter Rejection Reason</h5>
             <textarea
               rows={4}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              style={{
-                width: '100%',
-                marginBottom: '1rem',
-                resize: 'vertical',
-                padding: '8px',
-                borderColor: '#ccc',
-                borderRadius: '4px',
-              }}
+              style={{ width: '100%', marginBottom: '1rem', resize: 'vertical', padding: '8px', borderColor: '#ccc', borderRadius: '4px' }}
               placeholder="Please provide a reason for rejection..."
             />
             <div style={{ textAlign: 'right' }}>
-              <button
-                onClick={closeRejectModal}
-                style={{
-                  marginRight: 8,
-                  padding: '6px 12px',
-                  backgroundColor: '#f2f2f2',
-                  border: '1px solid #ccc',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRejectSubmit}
-                style={{
-                  backgroundColor: '#800000',
-                  color: 'white',
-                  border: 'none',
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                Submit
-              </button>
+              <button onClick={closeRejectModal} style={cancelButtonStyle}>Cancel</button>
+              <button onClick={handleRejectSubmit} style={submitButtonStyle}>Submit</button>
             </div>
           </div>
         </div>
@@ -257,94 +183,138 @@ const PendingRequests = ({ leaves, loading, refreshLeaves, onApprove, onReject }
 
       {/* View Leave Details Modal */}
       {showViewModal && viewLeave && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999,
-            padding: 20,
-            overflowY: 'auto',
-          }}
-          onClick={closeViewModal}
-        >
-          <div
-            style={{
-              background: 'white',
-              padding: 30,
-              borderRadius: 10,
-              maxWidth: 900,
-              width: '100%',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-              color: '#333',
-              minHeight: 350,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h4 style={{ color: '#800000', marginBottom: 24, textAlign: 'center', letterSpacing: 1 }}>
-              Leave Request Details
-            </h4>
-            <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-              {/* Left Column: Staff Info & Arrangement */}
-              <div style={{ flex: 1, minWidth: 320 }}>
-                <h5 style={{ color: '#800000', marginBottom: 12 }}>Staff Information</h5>
-                <div style={{ marginBottom: 8 }}><strong>Name:</strong> {viewLeave.user?.firstName} {viewLeave.user?.lastName}</div>
-                <div style={{ marginBottom: 8 }}><strong>Staff ID:</strong> {viewLeave.user?.id}</div>
-                <div style={{ marginBottom: 8 }}><strong>Job Title:</strong> {viewLeave.user?.jobTitle}</div>
-                <div style={{ marginBottom: 8 }}><strong>Faculty:</strong> {viewLeave.faculty}</div>
-                <div style={{ marginBottom: 8 }}><strong>Department:</strong> {viewLeave.department}</div>
-                <div style={{ marginBottom: 8 }}><strong>Staff Category:</strong> {viewLeave.staffCategory}</div>
-                <div style={{ marginBottom: 8 }}><strong>Mobile:</strong> {viewLeave.user?.mobile}</div>
-                <div style={{ marginBottom: 8 }}><strong>Email:</strong> {viewLeave.user?.personalEmail || viewLeave.user?.email}</div>
-                <h5 style={{ color: '#800000', margin: '20px 0 12px' }}>Arrangement Details</h5>
-                <div style={{ marginBottom: 8 }}><strong>Name:</strong> {viewLeave.arrangementName}</div>
-                <div style={{ marginBottom: 8 }}><strong>Address:</strong> {viewLeave.arrangementAddress}</div>
-                <div style={{ marginBottom: 8 }}><strong>Phone:</strong> {viewLeave.arrangementPhone}</div>
-                <div style={{ marginBottom: 8 }}><strong>Email:</strong> {viewLeave.arrangementEmail}</div>
+        <div className="modal-backdrop" style={backdropStyle} onClick={closeViewModal}>
+          <div style={viewModalStyle} onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ color: '#800000', marginBottom: 20, textAlign: 'center' }}>Leave Request Details</h3>
+            
+            {/* Two-column grid for a structured office-style layout */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', fontSize: '14px' }}>
+              {/* Staff Information */}
+              <div>
+                <h5 style={sectionHeaderStyle}>Staff Information</h5>
+                <Detail label="Name" value={`${viewLeave.user?.firstName} ${viewLeave.user?.lastName}`} />
+                <Detail label="Staff ID" value={viewLeave.user?.id} />
+                <Detail label="Job Title" value={viewLeave.user?.jobTitle} />
+                <Detail label="Faculty" value={viewLeave.faculty} />
+                <Detail label="Department" value={viewLeave.department} />
+                <Detail label="Staff Category" value={viewLeave.staffCategory} />
+                <Detail label="Mobile" value={viewLeave.user?.mobile} />
+                <Detail label="Email" value={viewLeave.user?.personalEmail || viewLeave.user?.email} />
               </div>
-              {/* Right Column: Leave Details */}
-              <div style={{ flex: 1, minWidth: 320 }}>
-                <h5 style={{ color: '#800000', marginBottom: 12 }}>Leave Details</h5>
-                <div style={{ marginBottom: 8 }}><strong>Leave Type:</strong> {viewLeave.leaveType}</div>
+
+              {/* Leave Details */}
+              <div>
+                <h5 style={sectionHeaderStyle}>Leave Details</h5>
+                <Detail label="Leave Type" value={viewLeave.leaveType} />
                 {(viewLeave.leaveType === 'Short Leave' || viewLeave.leaveType === 'Half Day') ? (
                   <>
-                    <div style={{ marginBottom: 8 }}><strong>Date:</strong> {dayjs(viewLeave.shortLeaveDate).format('YYYY-MM-DD')}</div>
-                    <div style={{ marginBottom: 8 }}><strong>Time:</strong> {viewLeave.shortLeaveStartTime} - {viewLeave.shortLeaveEndTime}</div>
+                    <Detail label="Date" value={dayjs(viewLeave.shortLeaveDate).format('YYYY-MM-DD')} />
+                    <Detail label="Time" value={`${viewLeave.shortLeaveStartTime} - ${viewLeave.shortLeaveEndTime}`} />
                   </>
                 ) : (
                   <>
-                    <div style={{ marginBottom: 8 }}><strong>From:</strong> {dayjs(viewLeave.fromDate).format('YYYY-MM-DD')}</div>
-                    <div style={{ marginBottom: 8 }}><strong>To:</strong> {dayjs(viewLeave.toDate).format('YYYY-MM-DD')}</div>
+                    <Detail label="From" value={dayjs(viewLeave.fromDate).format('YYYY-MM-DD')} />
+                    <Detail label="To" value={dayjs(viewLeave.toDate).format('YYYY-MM-DD')} />
                   </>
                 )}
-                <div style={{ marginBottom: 8 }}><strong>Duration:</strong> {viewLeave.numberOfDays} day(s)</div>
-                <div style={{ marginBottom: 8 }}><strong>Purpose:</strong> {viewLeave.purpose}</div>
-                <div style={{ marginBottom: 8 }}><strong>Address During Leave:</strong> {viewLeave.addressDuringLeave}</div>
+                <Detail label="Duration" value={`${viewLeave.numberOfDays} day(s)`} />
+                <Detail label="Purpose" value={viewLeave.purpose} />
+                <Detail label="Address During Leave" value={viewLeave.addressDuringLeave} />
               </div>
             </div>
-            <div style={{ marginTop: 32, textAlign: 'right' }}>
-              <button
-                onClick={closeViewModal}
-                style={{
-                  backgroundColor: '#800000',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                Close
-              </button>
+
+            {/* Arrangement Details */}
+            <div style={{ marginTop: 30 }}>
+              <h5 style={sectionHeaderStyle}>Arrangement Details</h5>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                <Detail label="Name" value={viewLeave.arrangementName} />
+                <Detail label="Address" value={viewLeave.arrangementAddress} />
+                <Detail label="Phone" value={viewLeave.arrangementPhone} />
+                <Detail label="Email" value={viewLeave.arrangementEmail} />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 30, textAlign: 'center' }}>
+              <button onClick={closeViewModal} style={closeButtonStyle}>Close</button>
             </div>
           </div>
         </div>
       )}
     </>
   );
+};
+
+/* Helper Component for Cleaner Layout */
+const Detail = ({ label, value }) => (
+  <div style={{ marginBottom: 8 }}>
+    <strong style={{ width: 140, display: 'inline-block', color: '#555' }}>{label}:</strong>
+    <span style={{ color: '#222' }}>{value || '-'}</span>
+  </div>
+);
+
+/* Styles */
+const backdropStyle = {
+  position: 'fixed',
+  inset: 0,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 9999,
+  padding: 20,
+  overflowY: 'auto',
+};
+
+const viewModalStyle = {
+  background: 'white',
+  padding: '30px',
+  borderRadius: '8px',
+  maxWidth: '900px',
+  width: '100%',
+  boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+};
+
+const rejectModalStyle = {
+  background: 'white',
+  padding: 20,
+  borderRadius: 8,
+  maxWidth: 400,
+  width: '90%',
+  boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+};
+
+const cancelButtonStyle = {
+  marginRight: 8,
+  padding: '6px 12px',
+  backgroundColor: '#f2f2f2',
+  border: '1px solid #ccc',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+
+const submitButtonStyle = {
+  backgroundColor: '#800000',
+  color: 'white',
+  border: 'none',
+  padding: '6px 12px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+
+const closeButtonStyle = {
+  backgroundColor: '#800000',
+  color: 'white',
+  border: 'none',
+  padding: '8px 20px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+};
+
+const sectionHeaderStyle = {
+  color: '#800000',
+  marginBottom: '10px',
+  borderBottom: '1px solid #ddd',
+  paddingBottom: '5px',
 };
 
 export default PendingRequests;

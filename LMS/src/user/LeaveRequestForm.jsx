@@ -27,7 +27,6 @@ const staffCategories = ['Academic', 'Academic Supportive', 'Non-Academic','othe
 const leaveTypes = [
   'Casual Leave',
   'Sick Leave',
-  'Vacation Leave',
   'Duty Leave',
   'Half Day',
   'Short Leave',
