@@ -32,7 +32,7 @@ import Tooltip, { InfoTooltip, HelpTooltip, FieldTooltip } from './components/To
 function App() {
   return (
     <OnboardingProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/Frontend">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginForm />} />
@@ -46,12 +46,12 @@ function App() {
           <Route path="/leave-log" element={<LeaveLog />} />
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/employee-report" element={<EmployeeLeaveReport />} />
-          <Route path='/admin/monthly-report' element={<MonthlyLeaveReport/>}/>
-          <Route path='/SysAdminDashboard' element={<SysAdminDashboard/>}/>
-          <Route path='/AdminProfile' element={<AdminProfile/>}/>
-          <Route path='/pending' element={<PendingUsers/>}/>
-          <Route path='/Footer' element={<Footer/>}/>
-          <Route path='/AuditLogPanel' element={<AuditLogPanel/>}/>
+          <Route path="/admin/monthly-report" element={<MonthlyLeaveReport />} />
+          <Route path="/SysAdminDashboard" element={<SysAdminDashboard />} />
+          <Route path="/AdminProfile" element={<AdminProfile />} />
+          <Route path="/pending" element={<PendingUsers />} />
+          <Route path="/Footer" element={<Footer />} />
+          <Route path="/AuditLogPanel" element={<AuditLogPanel />} />
           <Route path="/ar/dashboard" element={<ARDashboard />} />
         </Routes>
       </BrowserRouter>
