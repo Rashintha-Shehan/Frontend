@@ -37,6 +37,7 @@ const AdminDashboard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  //leave managemet
   // Move fetchPendingLeaves outside useEffect so it can be reused
   const fetchPendingLeaves = async () => {
     setLoading(true);
