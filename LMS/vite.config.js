@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  base: '/Frontend/',  // <--- Add this line with your repo name (case sensitive!)
+  base: '/',  // always use '/' locally
   plugins: [react()],
   server: {
     proxy: {

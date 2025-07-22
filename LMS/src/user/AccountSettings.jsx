@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { toast } from 'react-toastify';
 import zxcvbn from 'zxcvbn';
 import Cropper from 'react-easy-crop';
@@ -175,16 +176,17 @@ export default function AccountSettings({ user, isGoogleUser, onUpdate, updating
     }
 
     try {
-      // Only send fields that users can edit
+
+      // Send all editable fields, including faculty and department
       const updateData = {
         id: formData.id,
         firstName: formData.firstName,
         lastName: formData.lastName,
         mobile: formData.mobile,
         personalEmail: formData.personalEmail,
-        image: formData.image
-        // Note: Faculty, Department, Staff Category, Type of Registration, and Job Title
-        // are not included as they are managed by system administrators
+        image: formData.image,
+        faculty: formData.faculty,
+        department: formData.department
       };
 
       // Add password only if provided
@@ -233,11 +235,31 @@ export default function AccountSettings({ user, isGoogleUser, onUpdate, updating
   };
 
   // Live avatar preview
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPreviewImage(URL.createObjectURL(file));
+      // Show preview immediately
+      const imageUrl = URL.createObjectURL(file);
+      setPreviewImage(imageUrl);
       setShowCropper(true);
+
+      // Upload to backend
+      try {
+        const token = localStorage.getItem('token');
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        const res = await axios.post('http://localhost:8080/api/auth/user/profile/image-upload', formDataUpload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (res.data && res.data.imageUrl) {
+          setFormData(prev => ({ ...prev, image: res.data.imageUrl }));
+        }
+      } catch (err) {
+        toast.error('Failed to upload image.');
+      }
     }
   };
 
@@ -286,6 +308,29 @@ export default function AccountSettings({ user, isGoogleUser, onUpdate, updating
       const croppedImgUrl = await getCroppedImg(previewImage, croppedAreaPixels);
       setPreviewImage(croppedImgUrl);
       setShowCropper(false);
+
+      // Convert data URL to blob
+      const response = await fetch(croppedImgUrl);
+      const blob = await response.blob();
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+
+      // Upload to backend
+      try {
+        const token = localStorage.getItem('token');
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        const res = await axios.post('http://localhost:8080/api/auth/user/profile/image-upload', formDataUpload, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (res.data && res.data.imageUrl) {
+          setFormData(prev => ({ ...prev, image: res.data.imageUrl }));
+        }
+      } catch (err) {
+        toast.error('Failed to upload cropped image.');
+      }
     }
   };
 
@@ -444,8 +489,32 @@ export default function AccountSettings({ user, isGoogleUser, onUpdate, updating
       >
         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 180, position: 'relative' }}>
+            <label htmlFor="staffId" className="form-label" title="Your official staff/employee ID">
+              Staff ID <span style={{ color: 'red' }}>*</span>
+            </label>
+            <input
+              id="staffId"
+              className="form-control focus-highlight"
+              type="text"
+              value={formData.id}
+              onChange={e => handleInputChange('id', e.target.value)}
+              disabled={!isEditing}
+              required
+              aria-required="true"
+              aria-label="Staff ID"
+              tabIndex={0}
+              placeholder="e.g. ENG123, MED456"
+            />
+            {isGoogleUser && !formData.id && (
+              <div className="invalid-feedback" style={{ display: 'block' }}>
+                Please enter your official Staff ID to complete your profile.
+              </div>
+            )}
+            {inlineErrors.id && <div className="invalid-feedback" style={{ display: 'block' }}>{inlineErrors.id}</div>}
+          </div>
+          <div style={{ flex: 1, minWidth: 180, position: 'relative' }}>
             <label htmlFor="firstName" className="form-label" title="Your given name">First Name</label>
-                      <input
+            <input
               id="firstName"
               className="form-control focus-highlight"
               type="text"
@@ -458,10 +527,10 @@ export default function AccountSettings({ user, isGoogleUser, onUpdate, updating
               tabIndex={0}
             />
             {inlineErrors.firstName && <div className="invalid-feedback" style={{ display: 'block' }}>{inlineErrors.firstName}</div>}
-                    </div>
+          </div>
           <div style={{ flex: 1, minWidth: 180, position: 'relative' }}>
             <label htmlFor="lastName" className="form-label" title="Your family name">Last Name</label>
-                      <input
+            <input
               id="lastName"
               className="form-control focus-highlight"
               type="text"
@@ -474,8 +543,64 @@ export default function AccountSettings({ user, isGoogleUser, onUpdate, updating
               tabIndex={0}
             />
             {inlineErrors.lastName && <div className="invalid-feedback" style={{ display: 'block' }}>{inlineErrors.lastName}</div>}
-                    </div>
-                  </div>
+          </div>
+        </div>
+        {/* Section: Faculty & Department (Required) */}
+        <h3 style={{ fontSize: 18, color: 'var(--primary-color)', marginBottom: 8 }}>Work Info</h3>
+        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 180, position: 'relative' }}>
+            <label htmlFor="faculty" className="form-label" title="Your faculty">
+              Faculty <span style={{ color: 'red' }}>*</span>
+            </label>
+            <select
+              id="faculty"
+              className="form-control focus-highlight"
+              value={formData.faculty}
+              onChange={e => handleInputChange('faculty', e.target.value)}
+              disabled={!isEditing}
+              required
+              aria-required="true"
+              aria-label="Faculty"
+              tabIndex={0}
+            >
+              <option value="">Select Faculty</option>
+              {FACULTIES.map(fac => (
+                <option key={fac} value={fac}>{fac}</option>
+              ))}
+            </select>
+            {isGoogleUser && !formData.faculty && (
+              <div className="invalid-feedback" style={{ display: 'block' }}>
+                Please select your Faculty to complete your profile.
+              </div>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 180, position: 'relative' }}>
+            <label htmlFor="department" className="form-label" title="Your department">
+              Department <span style={{ color: 'red' }}>*</span>
+            </label>
+            <select
+              id="department"
+              className="form-control focus-highlight"
+              value={formData.department}
+              onChange={e => handleInputChange('department', e.target.value)}
+              disabled={!isEditing || !formData.faculty}
+              required
+              aria-required="true"
+              aria-label="Department"
+              tabIndex={0}
+            >
+              <option value="">Select Department</option>
+              {(DEPARTMENTS_BY_FACULTY[formData.faculty] || []).map(dep => (
+                <option key={dep} value={dep}>{dep}</option>
+              ))}
+            </select>
+            {isGoogleUser && !formData.department && (
+              <div className="invalid-feedback" style={{ display: 'block' }}>
+                Please select your Department to complete your profile.
+              </div>
+            )}
+          </div>
+        </div>
         {/* Section: Contact Info */}
         <h3 style={{ fontSize: 18, color: 'var(--primary-color)', marginBottom: 8 }}>Contact Info</h3>
         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>

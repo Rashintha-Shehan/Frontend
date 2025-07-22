@@ -11,7 +11,7 @@ import HelpCenter from '../components/HelpCenter';
 import GuidedTour from '../components/GuidedTour';
 import { useNavigate } from 'react-router-dom';
 import { isTokenExpired } from '../component/api';
-import { FaEdit, FaSave, FaTimesCircle, FaCheckCircle, FaExclamationTriangle, FaUser, FaClipboardList, FaChartBar, FaCog, FaSignOutAlt, FaQuestionCircle, FaPlay } from 'react-icons/fa';
+import { FaEdit, FaSave, FaTimesCircle, FaCheckCircle, FaExclamationTriangle, FaUser, FaClipboardList, FaChartBar, FaCog, FaSignOutAlt, FaQuestionCircle, FaPlay, FaInfoCircle } from 'react-icons/fa';
 import { toast } from "react-toastify";
 import NotificationBell from '../components/NotificationBell';
 
@@ -230,8 +230,10 @@ export default function UserDashboard() {
   // Calculate completion: 100% for required fields, bonus for optional fields
   const requiredCompletion = Math.round((completedRequiredFields.length / requiredFields.length) * 100);
   const optionalBonus = completedOptionalFields.length > 0 ? 20 : 0; // 20% bonus for mobile
-  const profileCompletion = Math.min(100, requiredCompletion + optionalBonus);
-  const isProfileComplete = requiredCompletion === 100;
+  // For Google users, do not allow 100% completion until all required fields are filled and user has edited their info
+  const mustEditProfile = isGoogleUser && (!user?.firstName || !user?.lastName || !user?.email || !user?.faculty || !user?.department || !user?.staffId || user?.id?.startsWith('GOOGLE_'));
+  const profileCompletion = mustEditProfile ? Math.min(99, requiredCompletion + optionalBonus) : Math.min(100, requiredCompletion + optionalBonus);
+  const isProfileComplete = !mustEditProfile && requiredCompletion === 100;
 
   // Debug: Log profile completion details
   

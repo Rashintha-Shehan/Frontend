@@ -192,6 +192,7 @@ export default function UserManagement() {
                     <h6 className="fw-bold text-maroon">{formatName(u)}</h6>
                     <small className="text-muted">{u.email}</small>
                     <div className="d-flex justify-content-center gap-2 mt-3">
+                      <button className="btn btn-sm btn-outline-primary" title="View Details" onClick={() => setSelectedUser(u)}><FaEye /></button>
                       <button className="btn btn-sm btn-success" onClick={() => handleApprove(u.id)}>Approve</button>
                       <button className="btn btn-sm btn-outline-danger" onClick={() => handleReject(u.id)}>Reject</button>
                     </div>

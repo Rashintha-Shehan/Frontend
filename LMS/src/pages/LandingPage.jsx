@@ -23,22 +23,22 @@ export default function LandingPage() {
         <div className="hero-overlay"></div>
 
         <div className="container py-4 hero-content">
-          <div className="d-flex flex-wrap justify-content-center gap-3 mb-4">
+          <div className="d-flex flex-wrap justify-content-center align-items-center gap-4 mb-4">
             <img 
               src={UniversityLogo} 
               alt="University Logo" 
               className="img-fluid"
-              style={{ height: '56px', maxWidth: '120px' }}
+              style={{ height: '70px' }}
             />
             <img 
               src={CEITLogo} 
               alt="CEIT Logo" 
               className="img-fluid"
-              style={{ height: '56px', maxWidth: '120px' }}
+              style={{ height: '70px' }}
             />
           </div>
 
-          <h1 className="display-5 fw-bold mb-3 mt-3 mt-lg-4">
+          <h1 className="display-4 fw-bold mb-3 mt-3 mt-lg-4">
             Leave Management System
           </h1>
 
@@ -46,18 +46,17 @@ export default function LandingPage() {
             Developed by <strong>CEIT</strong> for the <strong>University of Peradeniya</strong> to manage leave digitally with precision.
           </p>
 
-          {/* ✅ Stack buttons on small screens */}
           <div className="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-4">
             <Link 
               to="/login" 
-              className="btn btn-lg btn-gold px-4 d-flex align-items-center justify-content-center gap-2 w-100 w-sm-auto"
+              className="btn btn-lg btn-gold px-4 d-flex align-items-center justify-content-center gap-2"
             >
               <FaSignInAlt />
               Access Portal
             </Link>
             <Link 
               to="/register" 
-              className="btn btn-lg btn-outline-gold px-4 d-flex align-items-center justify-content-center gap-2 w-100 w-sm-auto"
+              className="btn btn-lg btn-gold px-4 d-flex align-items-center justify-content-center gap-2"
             >
               <FaUserPlus />
               New Registration
@@ -91,8 +90,9 @@ export default function LandingPage() {
               }
             ].map((feature, idx) => (
               <div className="col-md-4 col-sm-6 col-12" key={idx}>
-                <div className="card h-100 border-0 shadow-sm-hover feature-card p-lg">
-                  <div className="card-body text-center p-4">
+                {/* ✅ FIXED class names here */}
+                <div className="card h-100 border-0 shadow-sm feature-card p-4">
+                  <div className="card-body text-center">
                     <div className="mb-3">{feature.icon}</div>
                     <h5 className="text-maroon fw-semibold feature-title">{feature.title}</h5>
                     <p className="text-gray-600 feature-desc">{feature.desc}</p>
@@ -111,14 +111,15 @@ export default function LandingPage() {
             
             {/* Left: Text */}
             <div className="col-lg-6 mb-4 mb-lg-0">
-              <h2 className="fw-bold text-maroon mb-3 mt-lg section-title">
+              <h2 className="fw-bold text-maroon mb-3 section-title">
                 University of Peradeniya
               </h2>
-              <p className="lead text-gray-600 mb-4 section-subtitle">
+              <p className="lead text-secondary mb-4 section-subtitle">
                 Advancing Academic Operations with Innovation
               </p>
-              <div className="ps-3 border-start border-4 border-gold p-md">
-                <p className="text-gray-800 about-desc">
+              {/* ✅ FIXED p-md to p-4 */}
+              <div className="ps-3 border-start border-4 border-gold p-4">
+                <p className="text-secondary about-desc">
                   Developed by CEIT, this system represents our ongoing digital transformation in academic administration.
                 </p>
                 <div className="d-flex gap-2 mt-3">
@@ -131,12 +132,13 @@ export default function LandingPage() {
 
             {/* Right: Image */}
             <div className="col-lg-6 text-center">
-              <div className="bg-light rounded p-4 border mt-md">
+              {/* ✅ FIXED mt-md to mt-4 mt-lg-0 */}
+              <div className="bg-light rounded p-4 border mt-4 mt-lg-0">
                 <img 
                   src={UniversityLogo} 
                   alt="University Crest" 
                   className="img-fluid mb-3"
-                  style={{ height: '100px', maxWidth: '200px' }}
+                  style={{ height: '100px' }}
                 />
                 <h5 className="text-maroon fw-semibold mb-1">
                   Center for Information Technology
