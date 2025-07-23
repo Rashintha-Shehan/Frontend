@@ -59,30 +59,14 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
     });
   };
 
-  // Validate form before submit
-  const isFormValid = () => {
-    const requiredFields = [
-      'firstName',
-      'lastName',
-      'mobile',
-      'faculty',
-      // department is required only if faculty !== "Information Technology Center"
-      ...(form.faculty !== 'Information Technology Center' ? ['department'] : []),
-      'typeOfRegistration',
-      'staffCategory',
-      'jobTitle',
-    ];
-    return requiredFields.every(field => form[field] && form[field].trim() !== '');
-  };
+  // No required fields for admin edit; always return true
+  const isFormValid = () => true;
 
   // Handle form submission
   const handleSubmit = async e => {
     e.preventDefault();
 
-    if (!isFormValid()) {
-      setError('Please fill in all required fields.');
-      return;
-    }
+
 
     setLoading(true);
     setError('');
@@ -163,7 +147,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
               value={form.firstName}
               onChange={handleChange}
               placeholder="First Name"
-              required
               disabled={loading}
             />
           </div>
@@ -175,7 +158,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
               value={form.lastName}
               onChange={handleChange}
               placeholder="Last Name"
-              required
               disabled={loading}
             />
           </div>
@@ -187,7 +169,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
               value={form.mobile}
               onChange={handleChange}
               placeholder="Mobile"
-              required
               disabled={loading}
             />
           </div>
@@ -209,7 +190,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
               name="faculty"
               value={form.faculty}
               onChange={handleChange}
-              required
               disabled={loading}
             >
               <option value="">Select Faculty</option>
@@ -226,7 +206,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
                 name="department"
                 value={form.department}
                 onChange={handleChange}
-                required
                 disabled={loading}
               >
                 <option value="">Select Department</option>
@@ -243,7 +222,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
               name="typeOfRegistration"
               value={form.typeOfRegistration}
               onChange={handleChange}
-              required
               disabled={loading}
             >
               <option value="">Type of Registration</option>
@@ -259,7 +237,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
               name="staffCategory"
               value={form.staffCategory}
               onChange={handleChange}
-              required
               disabled={loading}
             >
               <option value="">Staff Category</option>
@@ -276,7 +253,6 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
                 name="jobTitle"
                 value={form.jobTitle}
                 onChange={handleChange}
-                required
                 disabled={loading}
               >
                 <option value="">Job Title</option>
@@ -291,7 +267,7 @@ export default function AdminUserEditModal({ user, isOpen, onClose, onSave, toke
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={loading || !isFormValid()}
+              disabled={loading}
             >
               {loading ? 'Saving...' : 'Save'}
             </button>

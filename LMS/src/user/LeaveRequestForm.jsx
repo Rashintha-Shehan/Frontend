@@ -22,7 +22,7 @@ const colors = {
   errorRed: '#dc3545',
 };
 
-const staffCategories = ['Academic', 'Academic Supportive', 'Non-Academic','other'];
+const staffCategories = ['Academic', 'Academic Support', 'Non-Academic','other'];
 
 const leaveTypes = [
   'Casual Leave',
@@ -158,7 +158,7 @@ const LeaveRequestForm = ({ initialData, onSuccess, onCancel, isEditing }) => {
         setForm(prev => ({ ...prev, numberOfDays: calculatedDays }));
         setErrors(prev => ({ ...prev, numberOfDays: '' }));
       } else {
-        setErrors(prev => ({ ...prev, numberOfDays: 'Duration must be between 0 and 8 hours' }));
+        setErrors(prev => ({ ...prev, numberOfDays: 'Duration must be 2 Hours only' }));
         setForm(prev => ({ ...prev, numberOfDays: '' }));
       }
     } else if (form.leaveType === 'Half Day') {
@@ -507,7 +507,19 @@ const LeaveRequestForm = ({ initialData, onSuccess, onCancel, isEditing }) => {
             <form onSubmit={handleSubmit} noValidate style={{ width: '100%' }}>
             <div className="row">
               <div className="col-md-6">
-                {renderSelectField('staffCategory', 'Staff Category', staffCategories, <FaUserTie />, true)}
+                {renderSelectField(
+                  'staffCategory',
+                  'Staff Category',
+                  staffCategories,
+                  <FaUserTie />,
+                  false // always enabled
+                )}
+                {!form.staffCategory && (
+                  <div className="alert alert-warning py-2 px-3" style={{ fontSize: '0.95em', marginBottom: 10 }}>
+                    <FaInfoCircle style={{ marginRight: 6 }} />
+                    Please select your staff category to continue. This is required for reporting and leave approval.
+                  </div>
+                )}
                 {renderSelectField('leaveType', 'Leave Type', leaveTypes, <FaCalendarAlt />)}
                 {renderSelectField('faculty', 'Faculty', faculties, <FaUniversity />, true)}
 

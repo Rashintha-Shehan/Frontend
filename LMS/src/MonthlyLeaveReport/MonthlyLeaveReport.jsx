@@ -36,6 +36,7 @@ function getImageDataAndSize(url, targetHeight = 32) {
 }
 
 const MonthlyLeaveReport = () => {
+  const [employeeFilter, setEmployeeFilter] = useState('academic'); // 'academic' or 'all'
   const months = [...Array(12)].map((_, i) => ({ value: i + 1, name: new Date(0, i).toLocaleString('default', { month: 'long' }) }));
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i);
@@ -67,8 +68,11 @@ const MonthlyLeaveReport = () => {
         ? await getLeaveReportByDateRange(startDate, endDate)
         : await getMonthlyLeaveReport(parseInt(month), parseInt(year));
 
-      // Only Academic staff (exclude Non-Academic and Academic Support)
-      const filtered = (data || []).filter(lr => lr.user && (lr.user.typeOfRegistration || lr.user.staffCategory) !== 'Non-Academic' && (lr.user.typeOfRegistration || lr.user.staffCategory) !== 'Academic Support');
+      let filtered = data || [];
+      if (employeeFilter === 'academic') {
+        filtered = filtered.filter(lr => lr.user && (lr.user.typeOfRegistration || lr.user.staffCategory) !== 'Non-Academic' && (lr.user.typeOfRegistration || lr.user.staffCategory) !== 'Academic Support');
+      }
+      // If 'all', do not filter
       setReportData(filtered);
 
       if (filtered.length > 0 && filtered[0].user) {
@@ -416,6 +420,13 @@ const MonthlyLeaveReport = () => {
 
   return (
     <div className="container mt-4 p-lg rounded shadow" style={{ maxWidth: 1200, backgroundColor: 'var(--background-color)', border: '3px solid var(--primary-color)' }}>
+      <div className="d-flex justify-content-end mb-2">
+        <label className="me-2">Show:</label>
+        <select value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} className="form-select" style={{ maxWidth: 200 }}>
+          <option value="academic">Academic Only</option>
+          <option value="all">All Employees</option>
+        </select>
+      </div>
       <h3 className="mb-1 text-center" style={{ color: 'var(--primary-color)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '2px', fontSize: 'var(--font-size-xl)', marginBottom: 'var(--space-md)' }}>
         Department Leave Summary Report
       </h3>
