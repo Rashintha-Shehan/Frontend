@@ -338,20 +338,33 @@ const EmployeeLeaveReport = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch employee list once on mount
-  useEffect(() => {
-    const fetchEmployeeIds = async () => {
-      try {
-        const ids = await getAllEmployeeIds();
-        // Only Academic staff (exclude Non-Academic and Academic Support)
-        const academic = ids.filter(e => (e.typeOfRegistration || e.staffCategory) !== 'Non-Academic' && (e.typeOfRegistration || e.staffCategory) !== 'Academic Support');
-        setEmployeeIds(academic);
-      } catch {
-        setError('Failed to load employee list.');
-      }
-    };
-    fetchEmployeeIds();
-  }, []);
+useEffect(() => {
+  const fetchEmployeeIds = async () => {
+    try {
+      const ids = await getAllEmployeeIds();
+
+      // Debug actual values
+      console.log(
+        'All Employees with details:',
+        ids.map(e => ({
+          id: e.id,
+          name: `${e.firstName} ${e.lastName}`,
+          typeOfRegistration: e.typeOfRegistration,
+          staffCategory: e.staffCategory
+        }))
+      );
+
+      // TEMP: Show all for now
+      setEmployeeIds(ids);
+
+    } catch {
+      setError('Failed to load employee list.');
+    }
+  };
+
+  fetchEmployeeIds();
+}, []);
+
 
   // Fetch leave data for selected employee
   const handleFetchReport = async () => {

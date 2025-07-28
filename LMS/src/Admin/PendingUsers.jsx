@@ -1,11 +1,3 @@
-// ✅ Updated to a more work-friendly, corporate-style UI
-// - Cleaner tab bar
-// - Compact search & summary
-// - Professional user cards & table
-// - HR-style user details modal with two-column layout
-//
-// NOTE: Using same functional logic, just UI structure improved
-
 import { useEffect, useState } from 'react';
 import api from '../component/api';
 import { FaEye, FaEdit, FaTimes } from 'react-icons/fa';
@@ -23,15 +15,17 @@ export default function UserManagement() {
   const [userToEdit, setUserToEdit] = useState(null);
 
   const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
+  const role = localStorage.getItem('role');
+  const isAssistantRegistrar = role === 'ASSISTANT_REGISTRAR';
 
-  const filterSysAdminAndSelf = (users) => users.filter(u => u.role !== 'SYS_ADMIN' && u.id !== currentUserId);
+  const filterSysAdminAndSelf = (users) =>
+    users.filter(u => u.role !== 'SYS_ADMIN' && u.id !== currentUserId);
 
   const fetchAllUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const role = localStorage.getItem('role');
-      const url = role === 'ASSISTANT_REGISTRAR' ? '/ar/users' : '/admin/users/all';
+      const url = isAssistantRegistrar ? '/ar/users' : '/admin/users/all';
       const res = await api.get(url);
       setAllUsers(filterSysAdminAndSelf(res.data));
     } catch (err) {
@@ -42,22 +36,30 @@ export default function UserManagement() {
   };
 
   const fetchPendingUsers = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const role = localStorage.getItem('role');
-      if (role === 'ASSISTANT_REGISTRAR') {
+    if (isAssistantRegistrar) {
+      // AR cannot approve/reject, but can view pending users
+      setLoading(true);
+      setError(null);
+      try {
         const res = await api.get('/ar/users');
         const pending = res.data.filter(u => u.approved === false);
         setPendingUsers(filterSysAdminAndSelf(pending));
-      } else {
+      } catch (err) {
+        setError('Failed to load pending users.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setLoading(true);
+      setError(null);
+      try {
         const res = await api.get('/admin/users/pending');
         setPendingUsers(filterSysAdminAndSelf(res.data));
+      } catch (err) {
+        setError('Failed to load pending users.');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError('Failed to load pending users.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -125,11 +127,14 @@ export default function UserManagement() {
     </div>
   );
 
+  // Tabs: only include pendingUsers tab if NOT Assistant Registrar
+  const tabs = isAssistantRegistrar ? ['allUsers'] : ['allUsers', 'pendingUsers'];
+
   return (
     <div className="container-fluid">
       {/* Tabs */}
       <div className="d-flex mb-3 border-bottom" style={{ borderColor: '#800000' }}>
-        {['allUsers', 'pendingUsers'].map(tab => (
+        {tabs.map(tab => (
           <button
             key={tab}
             className={`btn fw-bold me-2 ${activeTab === tab ? 'text-gold' : 'text-maroon'}`}
@@ -193,8 +198,12 @@ export default function UserManagement() {
                     <small className="text-muted">{u.email}</small>
                     <div className="d-flex justify-content-center gap-2 mt-3">
                       <button className="btn btn-sm btn-outline-primary" title="View Details" onClick={() => setSelectedUser(u)}><FaEye /></button>
-                      <button className="btn btn-sm btn-success" onClick={() => handleApprove(u.id)}>Approve</button>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleReject(u.id)}>Reject</button>
+                      {!isAssistantRegistrar && (
+                        <>
+                          <button className="btn btn-sm btn-success" onClick={() => handleApprove(u.id)}>Approve</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleReject(u.id)}>Reject</button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -229,7 +238,9 @@ export default function UserManagement() {
                     <td className="text-muted small">{u.jobTitle || '-'}</td>
                     <td className="text-center">
                       <button className="btn btn-sm btn-outline-primary me-2" onClick={() => setSelectedUser(u)} title="View"><FaEye /></button>
-                      <button className="btn btn-sm btn-outline-warning" onClick={() => handleEditClick(u)} title="Edit"><FaEdit /></button>
+                      {!isAssistantRegistrar && (
+                        <button className="btn btn-sm btn-outline-warning" onClick={() => handleEditClick(u)} title="Edit"><FaEdit /></button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -38,23 +38,23 @@ const ARDashboard = () => {
     if (windowWidth >= 768) setSidebarOpen(false);
   }, [windowWidth]);
 
-  // Fetch pending leaves
   const fetchPendingLeaves = async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('/leaves/ar/requests', { params: { faculty } });
-      setLeaves(data);
-      setNotifications((prev) => ({
-        ...prev,
-        pending: data.some(l => l.status === 'PENDING'),
-      }));
-      setError(null);
-    } catch {
-      setError('Failed to fetch pending leaves');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const { data } = await api.get('/ar/leaves/non-academic'); // Secure backend-filtered route
+    setLeaves(data);
+    setNotifications((prev) => ({
+      ...prev,
+      pending: data.some(l => l.status === 'PENDING'),
+    }));
+    setError(null);
+  } catch (err) {
+    setError('Failed to fetch pending leaves');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Initial load
   useEffect(() => {

@@ -42,8 +42,8 @@ const LeaveReportTabs = () => {
     <div className="container" style={{ maxWidth: '1100px', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" }}>
       {/* Main Tabs */}
       <div className="d-flex justify-content-center gap-2 mb-2">
-        <div style={mainTabStyle(mainTab === 'academic')} onClick={() => setMainTab('academic')}>Academic</div>
-        <div style={mainTabStyle(mainTab === 'nonAcademic')} onClick={() => setMainTab('nonAcademic')}>Non-Academic</div>
+        <div style={mainTabStyle(mainTab === 'academic')} onClick={() => setMainTab('academic')}>All Employees</div>
+        <div style={mainTabStyle(mainTab === 'nonAcademic')} onClick={() => setMainTab('nonAcademic')}>Annual Report</div>
         <div style={mainTabStyle(mainTab === 'academicSupport')} onClick={() => setMainTab('academicSupport')}>Academic Support</div>
       </div>
 

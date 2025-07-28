@@ -10,8 +10,9 @@ const ANNUAL_START = `${new Date().getFullYear()}-01-01`;
 const ANNUAL_END = `${new Date().getFullYear()}-12-31`;
 
 const englishHeaders = [
-  'Month', 'Casual', 'Sick', 'Half Day', 'Short Leave (Count)', 'Duty', 'Vacation', 'Total (Excl. Short Leave)'
+  'Month', 'Casual', 'Sick', 'Half Day', 'Short Leave', 'Duty', 'Vacation', 'Monthly Total', 'No Pay Days'
 ];
+
 
 const months = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -38,13 +39,17 @@ const AnnualLeaveReport = () => {
   }, [selectedEmployee]);
 
   const fetchEmployeeIds = async () => {
-    try {
-      const ids = await getAllEmployeeIds();
-      setEmployeeIds(ids);
-    } catch {
-      setError('Failed to load employee list.');
-    }
-  };
+  try {
+    const ids = await getAllEmployeeIds();
+    const filtered = ids.filter(emp =>
+      emp.typeOfRegistration === 'Non-Academic'
+      
+    );
+    setEmployeeIds(filtered);
+  } catch {
+    setError('Failed to load employee list.');
+  }
+};
 
   const fetchAnnualData = async (empId) => {
     setLoading(true);
@@ -66,58 +71,53 @@ const AnnualLeaveReport = () => {
   };
 
   // Aggregate data by month and leave type for the selected employee
-  const tableData = months.map((month, idx) => {
-    const monthNum = idx + 1;
-    const leaves = data.filter(lr => {
-      const d = lr.fromDate || lr.shortLeaveDate;
-      if (!d) return false;
-      return new Date(d).getMonth() + 1 === monthNum;
-    });
-    // Count by leave type
-    const counts = {
-      CASUAL: 0,
-      SICK: 0,
-      'HALF DAY': 0,
-      'SHORT LEAVE': 0,
-      DUTY: 0,
-      VACATION: 0,
-      TOTAL: 0
-    };
-    leaves.forEach(lr => {
-      const type = (lr.leaveType || '').toUpperCase();
-      if (type.includes('SHORT')) {
-        counts['SHORT LEAVE'] += 1;
-        // Do NOT add to TOTAL
-      } else if (type.includes('HALF')) {
-        counts['HALF DAY'] += 1;
-        counts.TOTAL += 1;
-      } else if (type.includes('CASUAL')) {
-        counts.CASUAL += 1;
-        counts.TOTAL += 1;
-      } else if (type.includes('SICK')) {
-        counts.SICK += 1;
-        counts.TOTAL += 1;
-      } else if (type.includes('DUTY')) {
-        counts.DUTY += 1;
-        counts.TOTAL += 1;
-      } else if (type.includes('VACATION')) {
-        counts.VACATION += 1;
-        counts.TOTAL += 1;
-      }
-    });
-    return [month, counts.CASUAL, counts.SICK, counts['HALF DAY'], counts['SHORT LEAVE'], counts.DUTY, counts.VACATION, counts.TOTAL];
+const tableData = months.map((month, idx) => {
+  const monthNum = idx + 1;
+  const leaves = data.filter(lr => {
+    const d = lr.fromDate || lr.shortLeaveDate;
+    return d && new Date(d).getMonth() + 1 === monthNum;
   });
 
-  // Table footer (total)
-  const totalRow = ['Total'];
-  for (let i = 1; i < englishHeaders.length; i++) {
-    let sum = 0;
-    tableData.forEach(row => {
-      const val = parseInt(row[i], 10);
-      if (!isNaN(val)) sum += val;
-    });
-    totalRow.push(sum);
-  }
+  const counts = {
+    CASUAL: 0, SICK: 0, 'HALF DAY': 0, 'SHORT LEAVE': 0, DUTY: 0, VACATION: 0, TOTAL: 0
+  };
+
+  leaves.forEach(lr => {
+    const type = (lr.leaveType || '').toUpperCase();
+    if (type.includes('SHORT')) counts['SHORT LEAVE'] += 1;
+    else if (type.includes('HALF')) { counts['HALF DAY'] += 1; counts.TOTAL += 1; }
+    else if (type.includes('CASUAL')) { counts.CASUAL += 1; counts.TOTAL += 1; }
+    else if (type.includes('SICK')) { counts.SICK += 1; counts.TOTAL += 1; }
+    else if (type.includes('DUTY')) { counts.DUTY += 1; counts.TOTAL += 1; }
+    else if (type.includes('VACATION')) { counts.VACATION += 1; counts.TOTAL += 1; }
+  });
+
+  const noPay = counts.TOTAL > 2 ? 1 : 0;
+
+  return [
+    month,
+    counts.CASUAL,
+    counts.SICK,
+    counts['HALF DAY'],
+    counts['SHORT LEAVE'],
+    counts.DUTY,
+    counts.VACATION,
+    counts.TOTAL,
+    noPay
+  ];
+});
+
+// Total row
+const totalRow = ['Total'];
+for (let i = 1; i < englishHeaders.length; i++) {
+  let sum = 0;
+  tableData.forEach(row => {
+    const val = parseInt(row[i], 10);
+    if (!isNaN(val)) sum += val;
+  });
+  totalRow.push(i === englishHeaders.length - 1 ? '-' : sum); // Dash for No Pay Days total
+}
+
 
   // Format value for table cell
   const formatCell = (val) => (val === 0 ? '-' : val);
@@ -143,108 +143,180 @@ const AnnualLeaveReport = () => {
       }));
   };
 
-  const exportToPDF = async () => {
-    try {
-      const logoTargetHeight = 22;
-      const leftLogo = await getImageDataAndSize('/uop.png', logoTargetHeight);
-      const rightLogo = await getImageDataAndSize('/ceit.png', logoTargetHeight);
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 10;
-      const headerHeight = 38;
-      const footerHeight = 38;
-      function drawHeaderFooter(data) {
-        let y = margin + 2;
-        doc.addImage(leftLogo.base64, 'PNG', margin, y, leftLogo.width, leftLogo.height);
-        doc.addImage(rightLogo.base64, 'PNG', pageWidth - margin - rightLogo.width, y, rightLogo.width, rightLogo.height);
-        let textY = y + 2;
-        doc.setFont('times', 'bold');
-        doc.setFontSize(13);
-        doc.setTextColor(0);
-        doc.text('Information Technology Center', pageWidth / 2, textY, { align: 'center' });
-        textY += 7;
-        doc.setFont('times', 'bold');
-        doc.setFontSize(11);
-        doc.text('University of Peradeniya', pageWidth / 2, textY, { align: 'center' });
-        textY += 7;
-        doc.setFont('helvetica', 'bold');
+ const exportToPDF = async () => {
+  try {
+    const logoTargetHeight = 22;
+    const leftLogo = await getImageDataAndSize('/uop.png', logoTargetHeight);
+    const rightLogo = await getImageDataAndSize('/ceit.png', logoTargetHeight);
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 10;
+    const headerHeight = 40;
+    const footerHeight = 40;
+
+    const tableBody = tableData.map(row => row.map(formatCell));
+    const formattedTotalRow = totalRow.map(formatCell);
+
+    const now = new Date();
+    const timestamp = now.toLocaleString('en-GB', {
+      timeZone: 'Asia/Colombo',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    function drawHeaderFooter(data) {
+      let y = margin + 2;
+
+      doc.addImage(leftLogo.base64, 'PNG', margin, y, leftLogo.width, leftLogo.height);
+      doc.addImage(rightLogo.base64, 'PNG', pageWidth - margin - rightLogo.width, y, rightLogo.width, rightLogo.height);
+
+      let textY = y + 2;
+
+      doc.setFont('times', 'bold');
+      doc.setFontSize(13);
+      doc.setTextColor(0);
+      doc.text('Information Technology Center', pageWidth / 2, textY, { align: 'center' });
+      textY += 6;
+      doc.text('University of Peradeniya', pageWidth / 2, textY, { align: 'center' });
+      textY += 6;
+      doc.setFontSize(11);
+      doc.text("Director's Office", pageWidth / 2, textY, { align: 'center' });
+
+      // Red underline
+      textY += 8;
+      doc.setDrawColor(200, 0, 0);
+      doc.setLineWidth(0.8);
+      doc.line(margin, headerHeight, pageWidth - margin, headerHeight);
+
+      // Report title section
+      textY = headerHeight + 6;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text('Annual Leave Report 2025', pageWidth / 2, textY, { align: 'center' });
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.line(pageWidth / 2 - 35, textY + 1.5, pageWidth / 2 + 35, textY + 1.5);
+      textY += 9;
+
+      // Employee Info
+      if (employeeDetails) {
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
-        doc.setTextColor(200, 0, 0);
-        doc.text('Annual Leave Report 2023', pageWidth / 2, textY, { align: 'center' });
+        doc.setTextColor(0);
+        doc.text(`Employee ID: ${employeeDetails.id}`, margin, textY);
+        textY += 5;
+        doc.text(`Employee Name: ${employeeDetails.firstName} ${employeeDetails.lastName}`, margin, textY);
+        textY += 5;
+        doc.text(`Designation: ${employeeDetails.jobTitle}`, margin, textY);
+        textY += 5;
+        doc.text(`Faculty: ${employeeDetails.faculty}`, margin, textY);
         textY += 6;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(0);
-        if (employeeDetails) {
-          doc.text(`Employee: ${employeeDetails.firstName} ${employeeDetails.lastName} (${employeeDetails.id})`, pageWidth / 2, textY, { align: 'center' });
-        }
-        doc.setDrawColor(200, 0, 0);
-        doc.setLineWidth(0.8);
-        doc.line(margin, headerHeight, pageWidth - margin, headerHeight);
-        // Footer
-        let fy = pageHeight - footerHeight + 8;
-        doc.setDrawColor(200, 0, 0);
-        doc.setLineWidth(0.8);
-        doc.line(margin, pageHeight - footerHeight, pageWidth - margin, pageHeight - footerHeight);
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(9);
-        doc.setTextColor(200, 0, 0);
-        doc.text('*This is a system-generated report issued by the University Leave Management System.', pageWidth / 2, fy, { align: 'center' });
-        fy += 10;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(0);
-        doc.text('© 2025 Leave Management System · Developed by CEIT', margin, fy);
-        doc.text('Phone: +94 (0) 81 2384848', pageWidth - margin - 60, fy);
-        fy += 4;
-        doc.text('Address: Information Technology Center', margin, fy);
-        doc.text('+94 (0) 81 2392070', pageWidth - margin - 60, fy);
-        fy += 4;
-        doc.text('University of Peradeniya', margin, fy);
-        doc.text('+94 (0) 81 2392090', pageWidth - margin - 60, fy);
-        fy += 4;
-        doc.text('Peradeniya, Sri Lanka', margin, fy);
-        doc.text('Ext: 2900', pageWidth - margin - 60, fy);
-        fy += 4;
-        doc.text('Email: info@ceit.pdn.ac.lk / info.ceit@gs.pdn.ac.lk', margin, fy);
-        doc.text('Web: www.ceit.pdn.ac.lk', pageWidth - margin - 60, fy);
-        // Page number
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(0);
-        const pageNum = doc.internal.getNumberOfPages();
-        const pageLabel = `Page ${data.pageNumber} of ${data.totalPages}`;
-        doc.text(pageLabel, pageWidth / 2, pageHeight - 6, { align: 'center' });
       }
-      autoTable(doc, {
-        startY: headerHeight + 24,
-        head: [englishHeaders],
-        body: [...tableData, totalRow],
-        styles: { fontSize: 10, valign: 'middle', halign: 'center' },
-        headStyles: { fillColor: [255,255,255], textColor: [0,0,0], fontStyle: 'bold', lineWidth: 0.5, lineColor: [0,0,0] },
-        theme: 'grid',
-        margin: { left: margin, right: margin },
-        tableLineColor: [0,0,0],
-        tableLineWidth: 0.5,
-        didDrawPage: function (data) {
-          drawHeaderFooter({
-            pageNumber: doc.internal.getCurrentPageInfo().pageNumber,
-            totalPages: doc.internal.getNumberOfPages(),
-          });
-        },
-        pageBreak: 'auto',
-      });
-      const pageCount = doc.internal.getNumberOfPages();
-      for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        drawHeaderFooter({ pageNumber: i, totalPages: pageCount });
-      }
-      doc.save('AnnualLeaveReport.pdf');
-    } catch (error) {
-      alert('Failed to generate PDF. See console for details.');
+
+      doc.text(`From 2025/01/01 To 2025/12/31`, margin, textY);
+      textY += 6;
+
+      // Timestamp
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${timestamp}`, pageWidth - margin, textY, { align: 'right' });
+
+      // Footer
+      const fy = pageHeight - footerHeight;
+      doc.setDrawColor(200, 0, 0);
+      doc.setLineWidth(0.8);
+      doc.line(margin, fy, pageWidth - margin, fy);
+
+      let fty = fy + 8;
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(9);
+      doc.setTextColor(200, 0, 0);
+      doc.text('*This is a system-generated report issued by the University Leave Management System.', pageWidth / 2, fty, { align: 'center' });
+      fty += 10;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(0);
+      doc.text('© 2025 Leave Management System · Developed by CEIT', margin, fty);
+      doc.text('Phone: +94 (0) 81 2384848', pageWidth - margin - 60, fty);
+      fty += 4;
+      doc.text('Address: Information Technology Center', margin, fty);
+      doc.text('+94 (0) 81 2392070', pageWidth - margin - 60, fty);
+      fty += 4;
+      doc.text('University of Peradeniya,Peradeniya, Sri Lanka.', margin, fty);
+      doc.text('+94 (0) 81 2392090', pageWidth - margin - 60, fty);
+      fty += 4;
+      doc.text('Director`s Email: director@ceit.pdn.ac.lk', margin, fty);
+      doc.text('Ext: 2900', pageWidth - margin - 60, fty);
+      fty += 4;
+      doc.text('Email: info@ceit.pdn.ac.lk / info.ceit@gs.pdn.ac.lk', margin, fty);
+      doc.text('Web: www.ceit.pdn.ac.lk', pageWidth - margin - 60, fty);
+
+      // Page number
+      doc.setFontSize(9);
+      const pageNum = doc.internal.getNumberOfPages();
+      const pageLabel = `Page ${data.pageNumber} of ${data.totalPages}`;
+      doc.setTextColor(0);
+      doc.text(pageLabel, pageWidth / 2, pageHeight - 6, { align: 'center' });
     }
-  };
+
+    autoTable(doc, {
+      startY: headerHeight + 60,
+      head: [englishHeaders],
+      body: [...tableBody, formattedTotalRow],
+      styles: { fontSize: 10, valign: 'middle', halign: 'center' },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
+      theme: 'grid',
+      margin: { left: margin, right: margin },
+      tableLineColor: [0, 0, 0],
+      tableLineWidth: 0.5,
+      didDrawPage: function (data) {
+        drawHeaderFooter({
+          pageNumber: doc.internal.getCurrentPageInfo().pageNumber,
+          totalPages: doc.internal.getNumberOfPages(),
+        });
+      },
+      pageBreak: 'auto',
+    });
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      drawHeaderFooter({ pageNumber: i, totalPages: pageCount });
+    }
+
+    // Signature area
+    const finalY = doc.lastAutoTable.finalY + 20;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    const lineLength = 40;
+
+    doc.text('Prepared by,', margin, finalY);
+    doc.text('Checked by,', pageWidth / 2 - 20, finalY);
+    doc.text('Director,', pageWidth - margin - 40, finalY);
+    doc.text('IT Center', pageWidth - margin - 40, finalY + 6);
+
+    // Dotted signature lines
+    doc.setLineWidth(0.1);
+    doc.setDrawColor(0);
+    doc.setLineDash([1], 0);
+
+    doc.line(margin, finalY + 14, margin + lineLength, finalY + 14);
+    doc.line(pageWidth / 2 - 20, finalY + 14, pageWidth / 2 - 20 + lineLength, finalY + 14);
+    doc.line(pageWidth - margin - 40, finalY + 14, pageWidth - margin - 40 + lineLength, finalY + 14);
+
+    doc.save(`AnnualLeaveReport_${employeeDetails?.id || 'Unknown'}.pdf`);
+  } catch (error) {
+    console.error(error);
+    alert('Failed to generate PDF. See console for details.');
+  }
+};
+
 
   const exportToExcel = () => {
     const ws = XLSX.utils.aoa_to_sheet([englishHeaders, ...tableData, totalRow]);
